@@ -1,29 +1,27 @@
-const express = require('express');
 'use strict';
-
+const express = require('express');
 const app = express();
 const port = 3000;
 
 const birds = require('./birds');
 
-app.get('/', (req, res) => {
-    res.send('Hello World');
-});
-
-app.post('/', (req, res) => {
-    res.send('Got a POST request');
-});
-
-app.get('/example/a', (req, res) => {
-    res.send('Hello from A!');
-});
-
-app.get('/example/b', (req, res, next) => {
-    console.log('the response will be sent by the next function ...');
+const myLogger = (req, res, next) => {
+    console.log('LOGGED');
     next();
-}, function (req, res) {
-    res.send('Hello from B!');
-})
+};
+
+const requestTime = (req, res, next) => {
+    req.requestTime = Date.now();
+    next();
+};
+
+app.use(myLogger, requestTime);
+
+app.get('/', (req, res) => {
+    let responseText = 'Hello world!<br>';
+    responseText += `<small>Requested at: ${req.requestTime}</small>`;
+    res.send(responseText);
+});
 
 app.use('/birds', birds);
 
